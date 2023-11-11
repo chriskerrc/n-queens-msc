@@ -1,42 +1,7 @@
-/*
-   
-   Scan for user's arguments on command line: 
-   -Standard? - only print number of solutions
-   -Verbose? - print number of solutions + numerical summary of solutions
-   Create a big list of hash defined length (big enough to handle 10x10 case) 
-       This list is an array of structures, each structure containing data for a board 
-       Structure contains: 
-       -width and height (w=h always)
-       -board (2D array of chars in of width w and height h) 
-       -pointer 
-
-   Create an empty board of 10x10 (then use a subset of this board) 
-   
-   Add the empty board to the front of the list at f=0
-
-   Find the resulting child boards of this parent
-      Create a child board somewhere (outside of list) 
-      Place queen in top left
-      Is this board unique? If yes, add board to end of list at location e. Update location e. If no, do nothing
-      Is this board a solution? If yes, pass summary to print summary function and increment counter. If no, do nothing 
-      Create 2nd child board
-      Place queen in next square
-      Ask questions again
-      Keep creating child boards until no more queens can be added 
-    
-   Add one to f, if there are more boards in list (check this with a function), loop to finding child boards
-     
-   When finished (what is finish condition), print according to command line argument
-
-[create 10 x 10 2D array by default in your board structure, then fill some of it. This way, you don't need to malloc space] 
-
-
-LIST OF FUNCTIONS
-
--make empty board based on argument on command line (subset of 10x10)
+/* -make empty board based on argument on command line (subset of 10x10)
 -add empty board to very start of list
 -add child board to end of list
--print solution e.g. 362514 (for verbose option)
+-calculate+print solution e.g. 362514 (for verbose option)
 -compare boards with others in list: is identical? - boolean function (use string compare?)
 -add queen to given square, without threatening other queens? 
 -is board a solution i.e. does n Qs = w = h? 
@@ -44,49 +9,55 @@ LIST OF FUNCTIONS
    -only allow numbers 1-10 and separate verbose flag 
 -is there a queen already in a given square?
 -are we at the end of the list?
--board to string 
--value is other than 1-10? 
-
-
-
-NUMBER OF SOLUTIONS
-
-n=1 sol=1
-n=2 sol=0
-n=3 sol=0
-n=4 sol=2
-n=5 sol=10
-n=6 sol=4
-n=7 sol=40
-n=8 sol=92
-n=9 sol=352
-n=10 sol=724
-
+-board to string
+-string only contains valid characters
 */
 
 #include "8q.h"
 
-board board_parent(int n, const char str[MAX_B_SIZE*MAX_B_SIZE+1]);
-const char *str_parent(int n);
+bool is_invalid_size(int n);
+board board_parent(int n, char str[MAX_B_SIZE*MAX_B_SIZE+1]);
+char *str_parent(int n);
+//bool is_queen(board b, int row, int col, int n);
+char *board2str(board b, int n);
+void test(void);
 
 int main(void)//int main(int argc, char *argv[])
 {  
-   int n = 8; //will get this from command line later
+   test();
+   int n = 3; //will get this from command line later
+
+   board static boards[MAX_LIST];
+   
+   if(is_invalid_size(n) == true){
+      printf("Invalid board size provided. Enter a size between 1-10 (inclusive).\n");
+      exit(EXIT_FAILURE); //have I used EXIT_FAILURE correctly? i.e. how is it different to returning 1?
+   }
    board b;
    
-   const char *string = str_parent(n);
+   char *string = str_parent(n);
 
    b = board_parent(n, string);
    for(int row = 0; row < n; row++){    //remove print later
       for(int col = 0; col < n; col++){ 
-         printf("%c", b.cells[row][col]);
+         printf("%c", b.a[row][col]);
       }
       printf("\n");
    }
    printf("\n");
+
+   char *string2 = board2str(b,n);
+   printf("String 2:%s\n", string2);
+   strcpy(boards[0].str, string2); //add string to board 0
+   
+   for(int i=0; i<n*n; i++){
+      printf("%c", boards[0].str[i]);
+   }
+
+   return EXIT_SUCCESS;
 }
 
-const char *str_parent(int n) // stop this function accepting values other than 1-10
+char *str_parent(int n)
 {   
    static char str[MAX_STR_LEN]; 
    for(int i=0; i<n*n; i++){
@@ -97,7 +68,7 @@ const char *str_parent(int n) // stop this function accepting values other than 
 }
 
 
-board board_parent(int n, const char str[MAX_B_SIZE*MAX_B_SIZE+1]) // stop this function accepting values other than 1-10
+board board_parent(int n, char str[MAX_B_SIZE*MAX_B_SIZE+1])
 {
    board b;
    b.numqueens = 0;
@@ -107,10 +78,59 @@ board board_parent(int n, const char str[MAX_B_SIZE*MAX_B_SIZE+1]) // stop this 
 
    for(int row = 0; row < n; row++){   
       for(int col = 0; col < n; col++){ 
-         b.cells[(str_index - col)/n][str_index - row * n] = str[str_index]; //convert 1D   string into 2D array
+         b.a[(str_index - col)/n][str_index - row * n] = str[str_index]; //convert 1D string into 2D array
          str_index++;
       }
    }
    return b;
 }
+
+bool is_invalid_size(int n)
+{
+   if(n<1 || n>10){
+      return true;
+   }
+   else{
+      return false;
+   }
+}
+
+char *board2str(board b, int n)
+{
+   int str_index = 0; 
+   static char str2[MAX_B_SIZE*MAX_B_SIZE+1];
+   for(int row = 0; row < n; row++){   
+      for(int col = 0; col < n; col++){ 
+         str2[str_index] = b.a[(str_index-col)/n][str_index - row * n]; //convert 2D array to string
+         str_index++;
+      }
+   }
+   return str2;
+}
+
+void test(void)
+{  
+   //add assert testing for all written functions
+   
+   //is_invalid_size 
+   assert(is_invalid_size(-1)==true);
+   assert(is_invalid_size(0)==true); //check that '0' size case handled correctly
+   assert(is_invalid_size(1)==false); 
+   assert(is_invalid_size(2)==false);
+   assert(is_invalid_size(3)==false);
+   assert(is_invalid_size(4)==false);
+   assert(is_invalid_size(5)==false);
+   assert(is_invalid_size(6)==false);
+   assert(is_invalid_size(7)==false);
+   assert(is_invalid_size(8)==false);
+   assert(is_invalid_size(9)==false);
+   assert(is_invalid_size(10)==false);
+   assert(is_invalid_size(11)==true);
+
+   //str_parent
+
+   //board_parent
+
+}
+
 
