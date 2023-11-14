@@ -32,8 +32,9 @@ bool is_solution(board b, int n);
 board add_queen(board b, int row, int col, int n);
 void add_board_list(board* b, board* l, int n);
 bool is_not_unique(board* b, board* l, int n);
+int unique_count(board* b, board boards[MAX_LIST], int n, int e);
 void copy_board(board* b, board* c, int n);
-int sol_cnt(
+//int sol_cnt(
 void test(void);
 
 int main(int argc, char *argv[])
@@ -42,7 +43,6 @@ int main(int argc, char *argv[])
    int n = arg_n(argc, argv);
    //need to account for verbose flag
    //also test that argv[1] is either an int or the string -verbose: nothing else
-   
    
    static board boards[MAX_LIST];
    
@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
    char str[MAX_STR_LEN]; 
    str_parent(n, str);
    par = make_board(n, str); //create parent board
+   
    //print empty parent board
    for(int row = 0; row < n; row++){    //remove print later
       for(int col = 0; col < n; col++){ 
@@ -66,44 +67,51 @@ int main(int argc, char *argv[])
    //add parent board to the front of the list
    add_board_list(&par, &boards[F_ZERO], n);
    
-   int j = 0;
-   int i = 0;
+   int f = 0;
+   int e = 1;
    static int sol_cnt = 0;
-   //start loop?  
-  
-   //copy parent board to child
+   //static int unique_counter = 0;
    board c;
-   copy_board(&par, &c, n);
-   //print child copy
-   for(int row = 0; row < n; row++){    //remove print later
-      for(int col = 0; col < n; col++){ 
-         printf("%c", c.a[row][col]);
-      }
-      printf("\n");
-   }
-   printf("\n");
+
+   while(f<e){ //n =1 f==0, e==1
+      for(int row = 0; row < n; row++){    
+         for(int col = 0; col < n; col++){
+  
+            //copy parent board to child
+            
+            copy_board(&boards[f], &c, n); //f ==0
+            //print child copy
+   
+               c = add_queen(c, row, col, n); //add queen to child
+               
+               
+                for(int row = 0; row < n; row++){    //remove print later
+                   for(int col = 0; col < n; col++){ 
+                      printf("%c", c.a[row][col]);
+                   }
+                   printf("\n");
+                }
+                printf("f: %i\n", f);
+                printf("e: %i\n", e);
+                printf("\n");
+               if(unique_count(&c, boards, n, e)==0){
+                  add_board_list(&c, &boards[e], n);
+                  if(is_solution(c, n)==1){
+                 sol_cnt++;  //made this static - is this the right way to make it available everywhere?      
+               printf("running solution count %i\n", sol_cnt);
+               }
+                  e++; //e
+               }
+   
+          } //closing for loop;
+       }
+   //if solution and unique, add solution to an array, for printing later (need code_end_index to keep track of where we are in this array i.e. increment code_end_index by 1 every time you add a code)
+   
+   f++;
+}  
    
    
-   
-   c = add_queen(c, j, i, n); //add queen to child
-   if(is_solution(c, n)==1){
-      sol_cnt++;  //made this static - is this the right way to make it available everywhere?
-   }
-   if(is_not_unique(c    //compare with every other board in list so far back to f0
-         //increment counter every time is_not_unique
-   
-   
-    
-   //if unique, add board to end of list
-   
-   //if solution and unique, add solution code to board in list - not a solution flag but a solution code - need a function to create the code
-   
-   //incremnt e 
-   //increment f
-   //increment i and j - need to use nested for loop - think about scope of this (for every child we go through all values of 2D array) 
-   
-   
-   print("%i solutions", sol_cnt); 
+   printf("%i solutions", sol_cnt); 
    return 0;
 }
 
@@ -247,7 +255,7 @@ bool is_threat_diag_tr(board b, int row, int col, int n)
    int i = col;
 
    //bottom right diag
-   while(i < n && j <= 0){
+   while(i < n && j >= 0){
       i++;
       j--; 
       if(is_queen(b, j, i)==1){
@@ -379,6 +387,20 @@ void copy_board(board* b, board* c, int n)
       }
    }
 }
+
+int unique_count(board* b, board boards[MAX_LIST], int n, int e)
+{  
+   int unique_counter = 0;
+   int check = e-1;
+     while(check >= 0){ //true
+        if(is_not_unique(b, &boards[check], n)==1){    //compare with every other board in list so far back to f0 - better to replace this with a function      
+                     unique_counter++;
+                     //printf("not unique counter %i\n", unique_counter);
+                  }
+               check--; 
+               }
+   return unique_counter;
+}
    
 void test(void)
 {  
@@ -502,6 +524,10 @@ void test(void)
    strcpy(str, "XXQXXXXXX");  
    b = make_board(3, str); 
    assert(is_threat_diag_tr(b, 1, 0, 3)==0); 
+
+   //strcpy(str, "XQXX"); 
+   //b = make_board(2, str); 
+   //assert(is_threat_diag_tr(b, 1, 0, 2)==1); 
    
    
    //IS_THREAT_DIAG_BL
@@ -550,6 +576,14 @@ void test(void)
    strcpy(str, "XXXXXQXXXQXXXXXQXXXQXXXXX"); 
    b = make_board(5, str); 
    assert(is_threat(b, 2, 1, 5)==1); 
+   
+   strcpy(str, "XXQX"); 
+   b = make_board(2, str); 
+   assert(is_threat(b, 0, 1, 2)==1); 
+   
+   //strcpy(str, "XQXX"); 
+   //b = make_board(2, str); 
+   //assert(is_threat(b, 1, 0, 2)==1); 
    
    //no threat 
    strcpy(str, "XXXXXQXXXQXXXXXQXXXQXXXXX"); 
