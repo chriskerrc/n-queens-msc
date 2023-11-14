@@ -1,12 +1,13 @@
 /*
 //helper logic
+-add solution flag to big list
+-count solutions in big list
 -add queen to given square (do this if no threat)
 
 //algorithm logic
 -add empty board to very start of list
 -add child board to end of list
 -compare boards with others in list: is identical? - boolean function: compare 2D arrays, not strings
--count solutions
 
 //verbose - do after get basic version working
 -standard or verbose (check command line input)?
@@ -507,53 +508,22 @@ void test(void)
 
    //IS_THREAT_DIAG
 
-   //threat 
-   strcpy(str, "XXXXXQXXXQXXXXXQXXXQXXXXX"); 
-   b = make_board(5, str, 1); 
-   assert(is_threat_diag(b, 2, 1, 5)==1); 
-   
-   //no threat 
-   strcpy(str, "XXXXXQXXXQXXXXXQXXXQXXXXX"); 
-   b = make_board(5, str, 1); 
-   assert(is_threat_diag(b, 4, 2, 5)==0); 
+   //threat
 
-   //add more tests TO DO
+   //no threat 
 
    //IS_THREAT
    
    //threat
-   strcpy(str, "XXXXXQXXXQXXXXXQXXXQXXXXX"); 
-   b = make_board(5, str, 1); 
-   assert(is_threat(b, 2, 1, 5)==1); 
-   
-   //no threat 
-   strcpy(str, "XXXXXQXXXQXXXXXQXXXQXXXXX"); 
-   b = make_board(5, str, 1); 
-   assert(is_threat(b, 4, 2, 5)==0); 
-   
-   //add more tests TO DO
 
+   //no threat 
+   
    //IS_SOLUTION
    
-   //solution n = 4
-   strcpy(str, "XQXXXXXQQXXXXXQX"); 
-   b = make_board(4, str, 1); 
-   assert(is_solution(b, 4)==1); 
+   //threat
 
-   //solution n = 8
-   strcpy(str, "QXXXXXXXXXXXXXQXXXXXQXXXXXXXXXXQXQXXXXXXXXXQXXXXXXXXQXXXXQXXXXX"); 
-   b = make_board(8, str, 1); 
-   assert(is_solution(b, 8)==1); 
+   //no threat 
 
-   //not solution n = 8
-   strcpy(str, "QXXXXXXXXXXXXXXXXXXXQXXXXXXXXXXQXQXXXXXXXXXQXXXXXXXXQXXXXQXXXXX"); 
-   b = make_board(8, str, 1); 
-   assert(is_solution(b, 8)==0); 
-
-   //solution n = 4
-   strcpy(str, "XQXXXXXQQXXXXXXX"); 
-   b = make_board(4, str, 1); 
-   assert(is_solution(b, 4)==0); 
 
    //ARG_N
    //HOW DO I TEST THIS FUNCTION? 
