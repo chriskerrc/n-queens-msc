@@ -8,6 +8,7 @@
 #define MAX_LIST 1000000
 #define QUEEN 'Q'
 #define BLANK 'X'
+#define STEP 1
 
 typedef struct board {  
       int a[MAX_B_SIZE][MAX_B_SIZE];
