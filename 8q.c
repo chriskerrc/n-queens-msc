@@ -10,6 +10,7 @@
    logic is known 
 
 */
+//remember to adjust makefile according to instructions
 
 #include "8q.h"
 
@@ -34,7 +35,7 @@ void add_board_list(board* b, board* l, int n);
 bool is_not_unique(board* b, board* l, int n);
 int unique_count(board* b, board boards[MAX_LIST], int n, int e);
 void copy_board(board* b, board* c, int n);
-//int sol_cnt(
+int rank_conv(int row, int n);
 void test(void);
 
 int main(int argc, char *argv[])
@@ -55,15 +56,6 @@ int main(int argc, char *argv[])
    str_parent(n, str);
    par = make_board(n, str); //create parent board
    
-   //print empty parent board
-   for(int row = 0; row < n; row++){    //remove print later
-      for(int col = 0; col < n; col++){ 
-         printf("%c", par.a[row][col]);
-      }
-      printf("\n");
-   }
-   printf("\n");
-   
    //add parent board to the front of the list
    add_board_list(&par, &boards[F_ZERO], n);
    
@@ -72,6 +64,9 @@ int main(int argc, char *argv[])
    static int sol_cnt = 0;
    //static int unique_counter = 0;
    board c;
+   
+   //char str_sol[MAX_SOL_LEN]; 
+   int rank = 0;
 
    while(f<e){ //n =1 f==0, e==1
       for(int row = 0; row < n; row++){    
@@ -84,26 +79,38 @@ int main(int argc, char *argv[])
    
                c = add_queen(c, row, col, n); //add queen to child
                
-               
+               /*
                 for(int row = 0; row < n; row++){    //remove print later
                    for(int col = 0; col < n; col++){ 
                       printf("%c", c.a[row][col]);
                    }
                    printf("\n");
                 }
-                printf("f: %i\n", f);
-                printf("e: %i\n", e);
-                printf("\n");
+                 */
+                //printf("f: %i\n", f);
+                //printf("e: %i\n", e);
+                //printf("\n");
                if(unique_count(&c, boards, n, e)==0){
                   add_board_list(&c, &boards[e], n);
                   if(is_solution(c, n)==1){
-                 sol_cnt++;  //made this static - is this the right way to make it available everywhere?      
-               printf("running solution count %i\n", sol_cnt);
+                     //print_solution(c, n, str_sol);
+                     sol_cnt++;  //made this static - is this the right way to make it available everywhere?          
+                       for(int col = 0; col < n; col++){
+                        for(int row = 0; row < n; row++){   
+                        
+                           if(is_queen(c, row, col)==1){ 
+                              rank = rank_conv(row, n);
+                              printf("%i", rank);
+                           }
+                        }
+                    } printf("\n");
+                   
+               //printf("running solution count %i\n", sol_cnt);
                }
                   e++; //e
                }
    
-          } //closing for loop;
+          } 
        }
    //if solution and unique, add solution to an array, for printing later (need code_end_index to keep track of where we are in this array i.e. increment code_end_index by 1 every time you add a code)
    
@@ -400,6 +407,13 @@ int unique_count(board* b, board boards[MAX_LIST], int n, int e)
                check--; 
                }
    return unique_counter;
+}
+
+int rank_conv(int row, int n)//maybe store this string in big list
+{  
+   int rank = 0;
+   rank = n-row;
+   return rank; 
 }
    
 void test(void)
