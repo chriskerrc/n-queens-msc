@@ -6,7 +6,7 @@
 #define MAX_B_SIZE 10 
 #define MAX_STR_LEN 100+1
 #define MAX_SOL_LEN 10+1
-#define MAX_LIST 1000000
+#define MAX_LIST 5000000
 #define QUEEN 'Q'
 #define BLANK 'X'
 #define STEP 1

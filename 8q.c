@@ -1,15 +1,4 @@
-/*
 
-//algorithm logic
--count solutions
-
-//verbose - do after get basic version working
--standard or verbose (check command line input)?
-   -only allow numbers 1-10 and separate verbose flag
--calculate+print solution e.g. 362514 (for verbose option)
-   logic is known 
-
-*/
 //remember to adjust makefile according to instructions
 
 #include "8q.h"
@@ -21,7 +10,7 @@ void str_parent(int n, char str[MAX_STR_LEN]);
 void board2str(board b, int n, char str2[MAX_B_SIZE*MAX_B_SIZE+1]);
 int arg_n(int argc, char *argv[]); //get n from command line and return it 
 int arg_verbose(int argc, char *argv[]); //check for -verbose flag
-bool is_queen(board b, int row, int col);
+bool is_queen(board b, int row, int col, int n);
 bool is_threat_row(board b, int row, int n);
 bool is_threat_col(board b, int col, int n);
 bool is_threat(board b, int row, int col, int n); //wrapper function for threat functions
@@ -29,14 +18,14 @@ bool is_threat_diag(board b, int row, int col, int n);
 bool is_threat_diag_br(board b, int row, int col, int n);
 bool is_threat_diag_tr(board b, int row, int col, int n);
 bool is_threat_diag_bl(board b, int row, int col, int n);
-bool is_threat_diag_tl(board b, int row, int col);
+bool is_threat_diag_tl(board b, int row, int col, int n);
 bool is_solution(board b, int n); 
 board add_queen(board b, int row, int col, int n);
-void add_board_list(board* b, board* l, int n);
 bool is_not_unique(board* b, board* l, int n);
 int unique_count(board* b, board boards[MAX_LIST], int n, int e);
 void copy_board(board* b, board* c, int n);
 int rank_conv(int row, int n);
+void print_sol(int n, int sol_cnt);
 void test(void);
 
 int main(int argc, char *argv[])
@@ -49,7 +38,7 @@ int main(int argc, char *argv[])
    
    if(is_invalid_size(n) == true){
       printf("Invalid board size provided. Enter a size between 1-10 (inclusive).\n");
-      exit(EXIT_FAILURE); //have I used EXIT_FAILURE correctly? i.e. how is it different to returning 1?
+      exit(EXIT_FAILURE);
    }
    board par;
    char str[MAX_STR_LEN]; 
@@ -57,15 +46,12 @@ int main(int argc, char *argv[])
    par = make_board(n, str); //create parent board
    
    //add parent board to the front of the list
-   add_board_list(&par, &boards[F_ZERO], n);
+   copy_board(&par, &boards[F_ZERO], n);
    
    int f = 0;
    int e = 1;
    static int sol_cnt = 0;
-   //static int unique_counter = 0;
    board c;
-   
-   //char str_sol[MAX_SOL_LEN]; 
    int rank = 0;
 
    while(f<e){ 
@@ -76,13 +62,13 @@ int main(int argc, char *argv[])
             //print child copy
             c = add_queen(c, row, col, n); //add queen to child
             if(unique_count(&c, boards, n, e)==0){
-               add_board_list(&c, &boards[e], n);
+               copy_board(&c, &boards[e], n);
                   if(is_solution(c, n)==1){
                      sol_cnt++;
                         if(v==1){  
                         for(int col = 0; col < n; col++){ //consider changing this so it prints by string, not int
                            for(int row = 0; row < n; row++){   
-                              if(is_queen(c, row, col)==1){ 
+                              if(is_queen(c, row, col, n)==1){ 
                                  rank = rank_conv(row, n);
                                  printf("%i", rank);
                               }
@@ -97,14 +83,7 @@ int main(int argc, char *argv[])
       }
    f++;
 }  
-   
-   if(n==1){ //make this a function that takes n as parameter
-      printf("%i solution", sol_cnt); 
-   }
-   if(n>=2 && n<=10){
-      printf("%i solutions", sol_cnt);
-   } 
-   return 0;
+   print_sol(n, sol_cnt);
 }
 
 void str_parent(int n, char str[MAX_STR_LEN])
@@ -188,14 +167,17 @@ int arg_verbose(int argc, char *argv[])
    return v; 
 }
 
-bool is_queen(board b, int row, int col)
+bool is_queen(board b, int row, int col, int n)
 {
-   if(b.a[row][col] == QUEEN){
-      return true;
-   }
-   else{
-      return false;
-   }
+   if(row >= 0 && col >= 0 && row < n && col < n){
+      if(b.a[row][col] == QUEEN){
+         return true;
+      }
+      else{
+         return false;
+      }
+   } 
+  return 0;
 }
 
 bool is_threat_row(board b, int row, int n) //combine row/col functions?
@@ -203,7 +185,7 @@ bool is_threat_row(board b, int row, int n) //combine row/col functions?
    //check row
    //increment through cols
    for(int c=0; c<n; c++){
-      if(is_queen(b, row, c)==1){
+      if(is_queen(b, row, c, n)==1){
          return 1; 
       } 
    }
@@ -215,7 +197,7 @@ bool is_threat_col(board b, int col, int n)
    //check col 
    //increment through rows 
    for(int r=0; r<n; r++){
-      if(is_queen(b, r, col)==1){
+      if(is_queen(b, r, col, n)==1){
          return 1;
       }
    }
@@ -227,7 +209,7 @@ bool is_threat_diag(board b, int row, int col, int n)
    int br_flag = is_threat_diag_br(b, row, col, n);
    int tr_flag = is_threat_diag_tr(b, row, col, n);
    int bl_flag = is_threat_diag_bl(b, row, col, n);
-   int tl_flag = is_threat_diag_tl(b, row, col);
+   int tl_flag = is_threat_diag_tl(b, row, col, n);
 
    if(br_flag == 1 || tr_flag == 1 || bl_flag == 1 || tl_flag == 1){
       return true;
@@ -247,7 +229,7 @@ bool is_threat_diag_br(board b, int row, int col, int n)
    while(i < n && j < n){
       i++;
       j++; 
-      if(is_queen(b, j, i)==1){
+      if(is_queen(b, j, i, n)==1){
                 cnt++;
       } 
    }
@@ -269,7 +251,7 @@ bool is_threat_diag_tr(board b, int row, int col, int n)
    while(i < n && j >= 0){
       i++;
       j--; 
-      if(is_queen(b, j, i)==1){
+      if(is_queen(b, j, i, n)==1){
                 cnt++;
       } 
    }
@@ -281,7 +263,7 @@ bool is_threat_diag_tr(board b, int row, int col, int n)
    }
 }
 
-bool is_threat_diag_tl(board b, int row, int col)
+bool is_threat_diag_tl(board b, int row, int col, int n)
 {
    int cnt = 0;
    int j = row;
@@ -290,7 +272,7 @@ bool is_threat_diag_tl(board b, int row, int col)
    while(i >= 0 && j >= 0){
       i--; 
       j--;
-      if(is_queen(b, j, i)==1){
+      if(is_queen(b, j, i, n)==1){
                 cnt++;
       } 
    }
@@ -311,7 +293,7 @@ bool is_threat_diag_bl(board b, int row, int col, int n)
    while(i >= 0 && j < n){
       i--; 
       j++;
-      if(is_queen(b, j, i)==1){
+      if(is_queen(b, j, i, n)==1){
                 cnt++;
       } 
    }
@@ -343,7 +325,7 @@ bool is_solution(board b, int n)
    int cnt = 0;
    for(int row = 0; row < n; row++){   
       for(int col = 0; col < n; col++){ 
-         if(is_queen(b, row, col)==1){
+         if(is_queen(b, row, col, n)==1){
             cnt++;
          }
       }
@@ -356,23 +338,22 @@ bool is_solution(board b, int n)
    }
 }
 
-
 board add_queen(board b, int row, int col, int n)
 {
-   if(is_threat(b, row, col, n)==false && is_queen(b, row, col)==false){
+   if(is_threat(b, row, col, n)==false && is_queen(b, row, col, n)==false){
       b.a[row][col] = QUEEN;
    }
    return b;
 }
 
-void add_board_list(board* b, board* l, int n)
-{   
+void copy_board(board* b, board* c, int n)
+{
    for(int row = 0; row < n; row++){   
-      for(int col = 0; col < n; col++){ 
-         l->a[row][col] = b->a[row][col];
+      for(int col = 0; col < n; col++){
+         c->a[row][col] = b->a[row][col];
       }
    }
-} 
+}
 
 bool is_not_unique(board* b, board* l, int n)
 {   
@@ -388,15 +369,6 @@ bool is_not_unique(board* b, board* l, int n)
       }
    }
    return 0;
-}
-
-void copy_board(board* b, board* c, int n)
-{
-   for(int row = 0; row < n; row++){   
-      for(int col = 0; col < n; col++){
-         c->a[row][col] = b->a[row][col];
-      }
-   }
 }
 
 int unique_count(board* b, board boards[MAX_LIST], int n, int e)
@@ -418,6 +390,16 @@ int rank_conv(int row, int n)//maybe store this string in big list
    int rank = 0;
    rank = n-row;
    return rank; 
+}
+
+void print_sol(int n, int sol_cnt)
+{
+   if(n==1){
+      printf("%i solution\n", sol_cnt); 
+   }
+   else{
+      printf("%i solutions\n", sol_cnt);
+   } 
 }
    
 void test(void)
@@ -487,12 +469,12 @@ void test(void)
    //queen
    strcpy(str, "XXQXXXXXX");
    b = make_board(3, str);
-   assert(is_queen(b, 0, 2)==1);
+   assert(is_queen(b, 0, 2, 3)==1);
    
    //no queen
    strcpy(str, "XXXXXXXXX");
    b = make_board(3, str);
-   assert(is_queen(b, 0, 2)==0);
+   assert(is_queen(b, 0, 2, 3)==0);
    
    //IS_THREAT_ROW
    
@@ -566,13 +548,13 @@ void test(void)
    
    strcpy(str, "XXXXXXXXXQXXXXXX");  
    b = make_board(4, str); 
-   assert(is_threat_diag_tl(b, 3, 2)==1);  
+   assert(is_threat_diag_tl(b, 3, 2, 4)==1);  
 
    //no threat 
 
    strcpy(str, "XXXXXXXXXQXXXXXX");  
    b = make_board(4, str); 
-   assert(is_threat_diag_tl(b, 1, 2)==0);  
+   assert(is_threat_diag_tl(b, 1, 2, 4)==0);  
 
    //IS_THREAT_DIAG
 
