@@ -1,30 +1,5 @@
 #include "8q.h"
 
-//move function definitions to header 
-bool is_invalid_size(int n);
-board make_board(int n, char str[MAX_B_SIZE*MAX_B_SIZE+1]);
-void str_parent(int n, char str[MAX_STR_LEN]);
-void board2str(board b, int n, char str2[MAX_B_SIZE*MAX_B_SIZE+1]);
-int arg_n(int argc, char *argv[]); //get n from command line and return it 
-int arg_verbose(int argc, char *argv[]); //check for -verbose flag
-bool is_queen(board b, int row, int col, int n);
-bool is_threat(board b, int row, int col, int n); //wrapper function for threat functions
-bool is_threat_row(board b, int row, int n);
-bool is_threat_col(board b, int col, int n);
-bool is_threat_diag(board b, int row, int col, int n);
-bool is_threat_diag_br(board b, int row, int col, int n);
-bool is_threat_diag_tr(board b, int row, int col, int n);
-bool is_threat_diag_bl(board b, int row, int col, int n);
-bool is_threat_diag_tl(board b, int row, int col, int n);
-bool is_solution(board b, int n); 
-board add_queen(board b, int row, int col, int n);
-bool is_not_unique(board* b, board* l, int n);
-int unique_count(board* b, board boards[MAX_LIST], int n, int e);
-void copy_board(board* b, board* c, int n);
-void print_row2rank(int row, int n);
-void print_sol(int n, int sol_cnt);
-void test(void);
-
 int main(int argc, char *argv[])
 {  
    test();
@@ -61,7 +36,7 @@ int main(int argc, char *argv[])
                   if(is_solution(c, n)==1){
                      sol_cnt++;
                         if(v==1){  
-                        for(int col = 0; col < n; col++){ //consider changing this so it prints by string, not int
+                        for(int col = 0; col < n; col++){
                            for(int row = 0; row < n; row++){   
                               if(is_queen(c, row, col, n)==1){ 
                                  print_row2rank(row, n);
@@ -127,12 +102,18 @@ void board2str(board b, int n, char str2[MAX_B_SIZE*MAX_B_SIZE+1])
 
 int arg_n(int argc, char *argv[])
 {  
-   int n = 0;
+   int n = 0; 
    if(argc == 2){
-      n = atoi(argv[1]); 
+      if(sscanf(argv[1], "%d", &n)!=1){
+         printf("Integer 1-10 expected");
+         exit(EXIT_FAILURE);
+      }
    }
    if(argc == 3){
-      n = atoi(argv[2]);
+      if(sscanf(argv[2], "%d", &n)!=1){
+         printf("Integer 1-10 expected");
+         exit(EXIT_FAILURE);
+      }
    }
    if(argc != 2 && argc != 3){
       printf("Incorrect number of command line arguments");
@@ -174,7 +155,7 @@ bool is_queen(board b, int row, int col, int n)
   return 0;
 }
 
-bool is_threat_row(board b, int row, int n) //combine row/col functions?
+bool is_threat_row(board b, int row, int n)
 {
    //check row
    //increment through cols
@@ -370,16 +351,15 @@ int unique_count(board* b, board boards[MAX_LIST], int n, int e)
    int unique_counter = 0;
    int check = e-1;
      while(check >= 0){ //true
-        if(is_not_unique(b, &boards[check], n)==1){    //compare with every other board in list so far back to f0 - better to replace this with a function      
+        if(is_not_unique(b, &boards[check], n)==1){    
                      unique_counter++;
-                     //printf("not unique counter %i\n", unique_counter);
-                  }
-               check--; 
-               }
+        }
+           check--; 
+     }
    return unique_counter;
 }
 
-void row2rank(int row, int n)//maybe store this string in big list
+void print_row2rank(int row, int n)
 {  
    int rank = 0;
    rank = n-row;
@@ -581,15 +561,35 @@ void test(void)
 
    //IS_THREAT_COL
 
-   //threat
-   strcpy(str, "XXXXXXXXXQXXXXXX");
+   //threat Q on first col
+   strcpy(str, "XXXXQXXXXXXXXXXX");
    b = make_board(4, str); 
-   assert(is_threat_col(b, 1, 4)==1);
+   assert(is_threat_col(b, 0, 4)==1);
+
+   //no threat Q on first col
+   strcpy(str, "XXXXQXXXXXXXXXXX");
+   b = make_board(4, str); 
+   assert(is_threat_col(b, 1, 4)==0);
    
-   //no threat
-   strcpy(str, "XXXXXXXXXQXXXXXX");
+   //threat Q on middle col 
+   strcpy(str, "XXXXXXXQXXXXXXXX");
    b = make_board(4, str); 
-   assert(is_threat_col(b, 3, 4)==0);
+   assert(is_threat_col(b, 3, 4)==1);
+
+   //no threat Q on middle col 
+   strcpy(str, "XXXXXXXQXXXXXXXX");
+   b = make_board(4, str); 
+   assert(is_threat_col(b, 2, 4)==0);
+
+   //threat Q on last col 
+   strcpy(str, "XXXXXXXXXXXQXXXX");
+   b = make_board(4, str); 
+   assert(is_threat_col(b, 3, 4)==1);
+
+   //no threat Q on last col 
+   strcpy(str, "XXXXXXXXXXXQXXXX");
+   b = make_board(4, str); 
+   assert(is_threat_col(b, 0, 4)==0);
  
    //IS_THREAT_DIAG_BR
 
@@ -615,10 +615,6 @@ void test(void)
    strcpy(str, "XXQXXXXXX");  
    b = make_board(3, str); 
    assert(is_threat_diag_tr(b, 1, 0, 3)==0); 
-
-   strcpy(str, "XQXX"); 
-   b = make_board(2, str); 
-   assert(is_threat_diag_tr(b, 1, 0, 2)==1); 
       
    //IS_THREAT_DIAG_BL
    
@@ -647,40 +643,88 @@ void test(void)
    assert(is_threat_diag_tl(b, 1, 2, 4)==0);  
 
    //IS_THREAT_DIAG
-
-   //threat 
-   strcpy(str, "XXXXXQXXXQXXXXXQXXXQXXXXX"); 
+  
+   //no threat
+   strcpy(str, "XXXXXXXXXXXXXXXXXXXXXXXXX"); 
    b = make_board(5, str); 
-   assert(is_threat_diag(b, 2, 1, 5)==1); 
+   assert(is_threat_diag(b, 2, 2, 5)==0); 
+
+   //no threat
+   strcpy(str, "XXXXXQXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(5, str); 
+   assert(is_threat_diag(b, 2, 2, 5)==0); 
+
+   //threat top left
+   strcpy(str, "QXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(5, str); 
+   assert(is_threat_diag(b, 2, 2, 5)==1); 
+
+   //threat top right 
+   strcpy(str, "XXXXQXXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(5, str); 
+   assert(is_threat_diag(b, 2, 2, 5)==1); 
    
-   //no threat 
-   strcpy(str, "XXXXXQXXXQXXXXXQXXXQXXXXX"); 
+   //threat bottom left 
+   strcpy(str, "XXXXXXXXXXXXXXXXXXXXQXXXX"); 
    b = make_board(5, str); 
-   assert(is_threat_diag(b, 4, 2, 5)==0); 
+   assert(is_threat_diag(b, 2, 2, 5)==1); 
 
-   //add more tests TO DO
+   //threat bottom right
+   strcpy(str, "XXXXXXXXXXXXXXXXXXXXXXXXQ"); 
+   b = make_board(5, str); 
+   assert(is_threat_diag(b, 2, 2, 5)==1); 
 
    //IS_THREAT
    
-   //threat
-   strcpy(str, "XXXXXQXXXQXXXXXQXXXQXXXXX"); 
+   //threat north
+   strcpy(str, "XQXXXXXXX"); 
+   b = make_board(3, str); 
+   assert(is_threat(b, 2, 1, 3)==1); 
+
+   //threat south 
+   strcpy(str, "XXXXXXXQX"); 
+   b = make_board(3, str); 
+   assert(is_threat(b, 0, 1, 3)==1); 
+   
+   //threat west 
+   strcpy(str, "XXXQXXXXX"); 
+   b = make_board(3, str); 
+   assert(is_threat(b, 1, 2, 3)==1); 
+
+   //threat east 
+   strcpy(str, "XXXXXQXXX"); 
+   b = make_board(3, str); 
+   assert(is_threat(b, 1, 0, 3)==1); 
+
+   //threat top left
+   strcpy(str, "QXXXXXXXXXXXXXXXXXXXXXXXX"); 
    b = make_board(5, str); 
-   assert(is_threat(b, 2, 1, 5)==1); 
-   
-   strcpy(str, "XXQX"); 
-   b = make_board(2, str); 
-   assert(is_threat(b, 0, 1, 2)==1); 
-   
-   strcpy(str, "XQXX"); 
-   b = make_board(2, str); 
-   assert(is_threat(b, 1, 0, 2)==1); 
-   
-   //no threat 
-   strcpy(str, "XXXXXQXXXQXXXXXQXXXQXXXXX"); 
+   assert(is_threat(b, 2, 2, 5)==1); 
+
+   //threat top right 
+   strcpy(str, "XXXXQXXXXXXXXXXXXXXXXXXXX"); 
    b = make_board(5, str); 
-   assert(is_threat(b, 4, 2, 5)==0); 
+   assert(is_threat(b, 2, 2, 5)==1); 
    
-   //add more tests TO DO
+   //threat bottom left 
+   strcpy(str, "XXXXXXXXXXXXXXXXXXXXQXXXX"); 
+   b = make_board(5, str); 
+   assert(is_threat(b, 2, 2, 5)==1); 
+
+   //threat bottom right
+   strcpy(str, "XXXXXXXXXXXXXXXXXXXXXXXXQ"); 
+   b = make_board(5, str); 
+   assert(is_threat(b, 2, 2, 5)==1); 
+   
+   //no threat with queens
+   strcpy(str, "XXQXXXXXQ"); 
+   b = make_board(3, str); 
+   assert(is_threat(b, 1, 0, 3)==0);
+   
+   //no threat empty board
+   strcpy(str, "XXXXXXXXX"); 
+   b = make_board(3, str); 
+   assert(is_threat(b, 2, 2, 3)==0); 
 
    //IS_SOLUTION
    
@@ -703,6 +747,8 @@ void test(void)
    strcpy(str, "XQXXXXXQQXXXXXXX"); 
    b = make_board(4, str); 
    assert(is_solution(b, 4)==0); 
+
+   //add more...
    
    //ADD_QUEEN
    
@@ -734,7 +780,9 @@ void test(void)
    board2str(b, 3, str);
    assert(strcmp(str, "XXXXXQXXX")==0);
    
-   //NOT_UNIQUE
+   //add more e.g. add queen to edge, more threatening positions ........
+   
+   //IS_NOT_UNIQUE
    board c;
 
    //two identical boards
@@ -757,10 +805,12 @@ void test(void)
    strcpy(str, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXQ"); 
    c = make_board(8, str); 
    assert(is_not_unique(&b, &c, 8)==0); 
+   
+   //more tests.....
 
    //UNIQUE_COUNT
 
-   //to do
+   //to do................
    
    //COPY_BOARD 
    //n=3
@@ -769,10 +819,12 @@ void test(void)
    copy_board(&b, &c, 3); 
    board2str(c, 3, str);
    assert(strcmp(str, "QXQXXQXXQ")==0);
+   
+   //more tests................
 
    //PRINT_ROW2RANK
    
-   //to do
+   //to do................
 
    
 }
