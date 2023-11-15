@@ -20,6 +20,7 @@ board make_board(int n, char str[MAX_B_SIZE*MAX_B_SIZE+1]);
 void str_parent(int n, char str[MAX_STR_LEN]);
 void board2str(board b, int n, char str2[MAX_B_SIZE*MAX_B_SIZE+1]);
 int arg_n(int argc, char *argv[]); //get n from command line and return it 
+int arg_verbose(int argc, char *argv[]); //check for -verbose flag
 bool is_queen(board b, int row, int col);
 bool is_threat_row(board b, int row, int n);
 bool is_threat_col(board b, int col, int n);
@@ -42,8 +43,7 @@ int main(int argc, char *argv[])
 {  
    test();
    int n = arg_n(argc, argv);
-   //need to account for verbose flag
-   //also test that argv[1] is either an int or the string -verbose: nothing else
+   int v = arg_verbose(argc, argv);
    
    static board boards[MAX_LIST];
    
@@ -68,57 +68,42 @@ int main(int argc, char *argv[])
    //char str_sol[MAX_SOL_LEN]; 
    int rank = 0;
 
-   while(f<e){ //n =1 f==0, e==1
+   while(f<e){ 
       for(int row = 0; row < n; row++){    
          for(int col = 0; col < n; col++){
-  
             //copy parent board to child
-            
-            copy_board(&boards[f], &c, n); //f ==0
+            copy_board(&boards[f], &c, n); 
             //print child copy
-   
-               c = add_queen(c, row, col, n); //add queen to child
-               
-               /*
-                for(int row = 0; row < n; row++){    //remove print later
-                   for(int col = 0; col < n; col++){ 
-                      printf("%c", c.a[row][col]);
-                   }
-                   printf("\n");
-                }
-                 */
-                //printf("f: %i\n", f);
-                //printf("e: %i\n", e);
-                //printf("\n");
-               if(unique_count(&c, boards, n, e)==0){
-                  add_board_list(&c, &boards[e], n);
+            c = add_queen(c, row, col, n); //add queen to child
+            if(unique_count(&c, boards, n, e)==0){
+               add_board_list(&c, &boards[e], n);
                   if(is_solution(c, n)==1){
-                     //print_solution(c, n, str_sol);
-                     sol_cnt++;  //made this static - is this the right way to make it available everywhere?          
-                       for(int col = 0; col < n; col++){
-                        for(int row = 0; row < n; row++){   
-                        
-                           if(is_queen(c, row, col)==1){ 
-                              rank = rank_conv(row, n);
-                              printf("%i", rank);
+                     sol_cnt++;
+                        if(v==1){  
+                        for(int col = 0; col < n; col++){ //consider changing this so it prints by string, not int
+                           for(int row = 0; row < n; row++){   
+                              if(is_queen(c, row, col)==1){ 
+                                 rank = rank_conv(row, n);
+                                 printf("%i", rank);
+                              }
                            }
-                        }
-                    } printf("\n");
-                   
-               //printf("running solution count %i\n", sol_cnt);
-               }
-                  e++; //e
-               }
-   
-          } 
-       }
-   //if solution and unique, add solution to an array, for printing later (need code_end_index to keep track of where we are in this array i.e. increment code_end_index by 1 every time you add a code)
-   
+                        } 
+                        printf("\n");
+                        }        
+                  }
+                  e++; 
+            }   
+         }
+      }
    f++;
 }  
    
-   
-   printf("%i solutions", sol_cnt); 
+   if(n==1){ //make this a function that takes n as parameter
+      printf("%i solution", sol_cnt); 
+   }
+   if(n>=2 && n<=10){
+      printf("%i solutions", sol_cnt);
+   } 
    return 0;
 }
 
@@ -134,7 +119,6 @@ void str_parent(int n, char str[MAX_STR_LEN])
 board make_board(int n, char str[MAX_B_SIZE*MAX_B_SIZE+1])
 {
    board b;
-   b.issolution = 0; 
    int str_index = 0; 
 
    for(int row = 0; row < n; row++){   
@@ -172,16 +156,36 @@ int arg_n(int argc, char *argv[])
 {  
    int n = 0;
    if(argc == 2){
-      n = atoi(argv[1]);
+      n = atoi(argv[1]); 
    }
    if(argc == 3){
       n = atoi(argv[2]);
    }
    if(argc != 2 && argc != 3){
-      printf("Incorrect number of command line arguments\n");
+      printf("Incorrect number of command line arguments");
       exit(EXIT_FAILURE);
    }
    return n; 
+}
+
+int arg_verbose(int argc, char *argv[])
+{  
+   int v = 0;
+   if(argc == 3){
+      if(strcmp(argv[1],"-verbose")==0){
+         v = 1;
+      }
+      else{
+         printf("If there are three arguments, \"-verbose\" is expected as the 2nd argument");
+         v = 0;
+         exit(EXIT_FAILURE);
+      }
+   }
+   else{
+      return 0;
+   }
+
+   return v; 
 }
 
 bool is_queen(board b, int row, int col)
