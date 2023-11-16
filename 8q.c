@@ -160,8 +160,6 @@ bool is_queen(board b, int row, int col, int n)
 
 bool is_threat_row(board b, int row, int n)
 {
-   //check row
-   //increment through cols
    for(int c=0; c<n; c++){
       if(is_queen(b, row, c, n)==1){
          return 1; 
@@ -171,9 +169,7 @@ return 0;
 }
 
 bool is_threat_col(board b, int col, int n)
-{
-   //check col 
-   //increment through rows 
+{ 
    for(int r=0; r<n; r++){
       if(is_queen(b, r, col, n)==1){
          return 1;
@@ -203,7 +199,6 @@ bool is_threat_diag_br(board b, int row, int col, int n)
    int j = row;
    int i = col;
 
-   //bottom right diag
    while(i < n && j < n){
       i++;
       j++; 
@@ -225,7 +220,6 @@ bool is_threat_diag_tr(board b, int row, int col, int n)
    int j = row;
    int i = col;
 
-   //bottom right diag
    while(i < n && j >= 0){
       i++;
       j--; 
@@ -246,7 +240,7 @@ bool is_threat_diag_tl(board b, int row, int col, int n)
    int cnt = 0;
    int j = row;
    int i = col;
-   //top left diag
+  
    while(i >= 0 && j >= 0){
       i--; 
       j--;
@@ -267,7 +261,7 @@ bool is_threat_diag_bl(board b, int row, int col, int n)
    int cnt = 0;
    int j = row;
    int i = col;
-   //bottom left diag 
+
    while(i >= 0 && j < n){
       i--; 
       j++;
@@ -352,7 +346,7 @@ int unique_count(board* b, board boards[MAX_LIST], int n, int e)
 {  
    int unique_counter = 0;
    int check = e-1;
-     while(check >= 0){ //true
+     while(check >= 0){ 
         if(is_not_unique(b, &boards[check], n)==1){    
                      unique_counter++;
         }
@@ -981,11 +975,22 @@ void test(void)
    c = make_board(10, str); 
    assert(is_not_unique(&b, &c, 10)==0); 
    
-   //UNIQUE_COUNT
-
-   //to do................
-   
    //COPY_BOARD 
+   
+   //n=1
+   strcpy(str, "Q"); 
+   b = make_board(2, str); 
+   copy_board(&b, &c, 2); 
+   board2str(c, 2, str);
+   assert(strcmp(str, "Q")==0);
+   
+   //n=2
+   strcpy(str, "QXQX"); 
+   b = make_board(2, str); 
+   copy_board(&b, &c, 2); 
+   board2str(c, 2, str);
+   assert(strcmp(str, "QXQX")==0);
+   
    //n=3
    strcpy(str, "QXQXXQXXQ"); 
    b = make_board(3, str); 
@@ -993,7 +998,54 @@ void test(void)
    board2str(c, 3, str);
    assert(strcmp(str, "QXQXXQXXQ")==0);
    
-   //more tests................
+   //n=4
+   strcpy(str, "QXQXQXQXQXQXQXQX"); 
+   b = make_board(4, str); 
+   copy_board(&b, &c, 4); 
+   board2str(c, 4, str);
+   assert(strcmp(str, "QXQXQXQXQXQXQXQX")==0);
+
+   //n=5
+   strcpy(str, "QXQXQQXQXQQXQXQQXQXQQXQXQ"); 
+   b = make_board(5, str); 
+   copy_board(&b, &c, 5); 
+   board2str(c, 5, str);
+   assert(strcmp(str, "QXQXQQXQXQQXQXQQXQXQQXQXQ")==0);
+   
+   //n=6
+   strcpy(str, "QXQXQQQXQXQQQXQXQQQXQXQQQXQXQQQXQXQQ"); 
+   b = make_board(6, str); 
+   copy_board(&b, &c, 6); 
+   board2str(c, 6, str);
+   assert(strcmp(str, "QXQXQQQXQXQQQXQXQQQXQXQQQXQXQQQXQXQQ")==0);
+
+   //n=7
+   strcpy(str, "QXQXQQQQXQXQQQQXQXQQQQXQXQQQQXQXQQQQXQXQQQQXQXQQQ"); 
+   b = make_board(7, str); 
+   copy_board(&b, &c, 7); 
+   board2str(c, 7, str);
+   assert(strcmp(str, "QXQXQQQQXQXQQQQXQXQQQQXQXQQQQXQXQQQQXQXQQQQXQXQQQ")==0);
+
+   //n=8
+   strcpy(str, "QXQXQQQQQXQXQQQQQXQXQQQQQXQXQQQQQXQXQQQQQXQXQQQQQXQXQQQQQXQXQQQQ"); 
+   b = make_board(8, str); 
+   copy_board(&b, &c, 8); 
+   board2str(c, 8, str);
+   assert(strcmp(str, "QXQXQQQQQXQXQQQQQXQXQQQQQXQXQQQQQXQXQQQQQXQXQQQQQXQXQQQQQXQXQQQQ")==0);
+   
+   //n=9
+   strcpy(str, "QXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQ"); 
+   b = make_board(9, str); 
+   copy_board(&b, &c, 9); 
+   board2str(c, 9, str);
+   assert(strcmp(str, "QXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQQXQXQQQQQ")==0);
+   
+   //n=9
+   strcpy(str, "XXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXX"); 
+   b = make_board(10, str); 
+   copy_board(&b, &c, 10); 
+   board2str(c, 10, str);
+   assert(strcmp(str, "XXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXXXXXQXXXQXX")==0);
 
    //ROW2RANK
    
