@@ -13,17 +13,27 @@ CC := clang
 8q: 8q.c 8q.h
 	$(CC) 8q.c $(OPTIM) -o 8q
 
+extension: extension.c extension.h
+	$(CC) extension.c $(OPTIM) -o extension
+
 8q_san: 8q.c 8q.h
 	$(CC) 8q.c $(SANITIZE) -o 8q_san
 
-all: 8q 8q_san
+extension_san: extension.c extension.h
+	$(CC) extension.c $(SANITIZE) -o extension_san
+
+all: 8q 8q_san extension extension_san
 
 run:
 	./8q 4
+
+#defaults to "-b" for bishop
+extrun:
+	./extension 4 -b -verbose
 
 clean:
 	rm -f 8q 8q_san 8q.zip
 
 # Create a .zip file using ALL files in this directory
 zip: 8q.c 8q.h 
-	zip -r 8q.zip 8q.c 8q.h Makefile # extension.txt extension.c  
+	zip -r 8q.zip 8q.c 8q.h Makefile extension.txt extension.c extension.h
