@@ -3,68 +3,64 @@
 int main(int argc, char *argv[])
 {  
    test();
-   int n = arg_n(argc, argv);
-   int v = arg_verbose(argc, argv);
-   int is_bish = arg_qb(argc, argv);
+   int n = get_arg_n(argc, argv);
+   bool verb_mode = get_arg_verbose(argc, argv);
+   bool qb_mode = get_arg_qb(argc, argv);
    static board boards[MAX_LIST];
    
    if(is_invalid_size(n) == true){
-      printf("Invalid board size provided. Enter a size between 1-10 (inclusive).\n");
+      fprintf(stderr,"Invalid board size provided. Enter a size between 1-10 (inclusive).\n");
       exit(EXIT_FAILURE);
    }
-   board par;
-   char str[MAX_STR_LEN]; 
-   str_parent(n, str);
-   par = make_board(n, str); //create parent board
-   
-   //add parent board to the front of the list
-   copy_board(&par, &boards[F_ZERO], n);
-   
-   int f = 0;
-   int e = 1;
-   static int sol_cnt = 0;
-   int rank = 0;
-   int file = 0;
-   board c;
 
-   while(f<e){ 
+   board parent;
+   char str[MAX_STR_LEN];
+   int first = FIRST_INDEX;
+   int end = END_INDEX;
+   static int sol_cnt = 0;
+   int file = 0;
+   int rank = 0; 
+   str_parent(n, str);
+   parent = make_board(n, str); 
+   copy_board(&parent, &boards[F_ZERO], n);
+   board child;
+
+   while(first<end){ 
       for(int row = 0; row < n; row++){    
          for(int col = 0; col < n; col++){
-            //copy parent board to child
-            copy_board(&boards[f], &c, n); 
-            //print child copy
-            c = add_piece(c, row, col, n, is_bish); //add piece to child
-            if(unique_count(&c, boards, n, e)==0){
-               copy_board(&c, &boards[e], n);
-                  if(is_solution(c, n)==1){
+            copy_board(&boards[first], &child, n); 
+            child = add_piece(child, row, col, n, qb_mode); 
+               if(unique_count(&child, boards, n, end)==0){
+                  copy_board(&child, &boards[end], n);
+                  if(is_solution(child, n)==1){
                      sol_cnt++;
-                        if(v==1){  
-                        for(int col = 0; col < n; col++){
-                           for(int row = 0; row < n; row++){   
-                              if(is_piece(c, row, col, n)==1){ 
-                                 rank = row2rank(row, n);
-                                 file = col2file(col);
-                                 print_file_rank(file, rank);
+                        if(verb_mode==1){  
+                           for(int col = 0; col < n; col++){
+                              for(int row = 0; row < n; row++){   
+                                 if(is_piece(child, row, col, n)==1){ 
+                                    rank = row2rank(row, n);
+                                    file = col2file(col);
+                                    print_file_rank(file, rank);
+                                 }
                               }
-                           }
-                        } 
-                        printf("\n");
+                           } 
+                           printf("\n");
                         }        
                   }
-                  e++; 
-            }   
+                  end++; 
+               }   
          }
       }
-   f++;
-}  
+      first++;
+   }  
    print_sol(n, sol_cnt);
 }
 
 void str_parent(int n, char str[MAX_STR_LEN])
 {   
    for(int i=0; i<n*n; i++){
-      str[i] = BLANK;
-      str[n*n] = '\0';
+      str[i] = EMPTY;
+      str[n*n] = NULL_CHAR;
    }
 }
 
@@ -101,35 +97,35 @@ void board2str(board b, int n, char str2[MAX_B_SIZE*MAX_B_SIZE+1])
          str_index++;
       }
    }
-   str2[n*n] = '\0';
+   str2[n*n] = NULL_CHAR;
 }
 
-int arg_n(int argc, char *argv[])
+int get_arg_n(int argc, char *argv[])
 {  
    int n = 0; 
    if(argc == 3 || argc == 4){
       if(sscanf(argv[1], "%d", &n)!=1){
-         printf("Integer 1-10 expected as 2nd argument\n");
+         fprintf(stderr,"Integer 1-10 expected");
          exit(EXIT_FAILURE);
       }
    }
    if(argc != 3 && argc != 4){
-      printf("Incorrect number of command line arguments\n");
+      fprintf(stderr,"Incorrect number of command line arguments\n");
       exit(EXIT_FAILURE);
    }
    return n; 
 }
 
-int arg_verbose(int argc, char *argv[])
+int get_arg_verbose(int argc, char *argv[])
 {  
-   int v = 0;
+   int verb_mode = 0;
    if(argc == 4){
       if(strcmp(argv[3],"-verbose")==0){
-         v = 1;
+         verb_mode = 1;
       }
       else{
          printf("If there are 4 arguments, \"-verbose\" is expected as the 4th argument\n");
-         v = 0;
+         verb_mode = 0;
          exit(EXIT_FAILURE);
       }
    }
@@ -137,10 +133,10 @@ int arg_verbose(int argc, char *argv[])
       return 0;
    }
 
-   return v; 
+   return verb_mode; 
 }
 
-int arg_qb(int argc, char *argv[])
+int get_arg_qb(int argc, char *argv[])
 {  
    int is_bish = 0;
    if(argc == 3 || argc == 4){
@@ -174,35 +170,35 @@ bool is_piece(board b, int row, int col, int n)
 bool is_threat_row(board b, int row, int n, int bish)
 {
    if(bish == 0){
-   for(int c=0; c<n; c++){
-      if(is_piece(b, row, c, n)==1){
-         return 1; 
+   for(int col=0; col<n; col++){
+      if(is_piece(b, row, col, n)==1){
+         return true; 
       } 
    }
    }
-return 0;
+return false;
 }
 
 bool is_threat_col(board b, int col, int n, int bish)
 {
    if(bish == 0){
-   for(int r=0; r<n; r++){
-      if(is_piece(b, r, col, n)==1){
-         return 1;
+   for(int row=0; row<n; row++){
+      if(is_piece(b, row, col, n)==1){
+         return true;
       }
    }
    }
-return 0;
+return false;
 }
 
 bool is_threat_diag(board b, int row, int col, int n)
 {
-   int br_flag = is_threat_diag_br(b, row, col, n);
-   int tr_flag = is_threat_diag_tr(b, row, col, n);
-   int bl_flag = is_threat_diag_bl(b, row, col, n);
-   int tl_flag = is_threat_diag_tl(b, row, col, n);
+   bool br_bool = is_threat_diag_br(b, row, col, n);
+   bool tr_bool = is_threat_diag_tr(b, row, col, n);
+   bool bl_bool = is_threat_diag_bl(b, row, col, n);
+   bool tl_bool = is_threat_diag_tl(b, row, col, n);
 
-   if(br_flag == 1 || tr_flag == 1 || bl_flag == 1 || tl_flag == 1){
+   if(br_bool == 1 || tr_bool == 1 || bl_bool == 1 || tl_bool == 1){
       return true;
    }
    else{
@@ -216,18 +212,18 @@ bool is_threat_diag_br(board b, int row, int col, int n)
    int j = row;
    int i = col;
 
-   while(i < n && j < n){
-      i++;
-      j++; 
+   while(j < n && i < n){
+      j++;
+      i++; 
       if(is_piece(b, j, i, n)==1){
-                cnt++;
+         cnt++;
       } 
    }
    if(cnt > 0){
-      return 1;
+      return true;
    }
    else{
-      return 0;
+      return false;
    }
 }
 
@@ -237,18 +233,18 @@ bool is_threat_diag_tr(board b, int row, int col, int n)
    int j = row;
    int i = col;
 
-   while(i < n && j >= 0){
-      i++;
+   while(j >= 0 && i < n){
       j--; 
+      i++;
       if(is_piece(b, j, i, n)==1){
-                cnt++;
+         cnt++;
       } 
    }
    if(cnt > 0){
-      return 1;
+      return true;
    }
    else{
-      return 0;
+      return false;
    }
 }
 
@@ -258,18 +254,18 @@ bool is_threat_diag_tl(board b, int row, int col, int n)
    int j = row;
    int i = col;
   
-   while(i >= 0 && j >= 0){
-      i--; 
+   while(j >= 0 && i >= 0){
       j--;
+      i--; 
       if(is_piece(b, j, i, n)==1){
-                cnt++;
+         cnt++;
       } 
    }
    if(cnt > 0){
-      return 1;
+      return true;
    }
    else{
-      return 0;
+      return false;
    }
 }
 
@@ -278,29 +274,29 @@ bool is_threat_diag_bl(board b, int row, int col, int n)
    int cnt = 0;
    int j = row;
    int i = col;
-   
-   while(i >= 0 && j < n){
-      i--; 
+
+   while(j < n && i >= 0){
       j++;
+      i--; 
       if(is_piece(b, j, i, n)==1){
-                cnt++;
+         cnt++;
       } 
    }
    if(cnt > 0){
-      return 1;
+      return true;
    }
    else{
-      return 0;
+      return false;
    }
 }
 
 bool is_threat(board b, int row, int col, int n, int bish)
 {
-   int row_flag = is_threat_row(b, row, n, bish);
-   int col_flag = is_threat_col(b, col, n, bish);
-   int diag_flag = is_threat_diag(b, row, col, n);
+   bool row_bool = is_threat_row(b, row, n, bish);
+   bool col_bool = is_threat_col(b, col, n, bish);
+   bool diag_bool = is_threat_diag(b, row, col, n);
 
-   if(row_flag == true || col_flag == true || diag_flag == true){
+   if(row_bool == true || col_bool == true || diag_bool == true){
       return true; 
    }
    else{
@@ -319,53 +315,53 @@ bool is_solution(board b, int n)
       }
    }
    if(cnt == n){
-      return 1; 
+      return true; 
    }
    else{
-      return 0;
+      return false;
    }
 }
 
 board add_piece(board b, int row, int col, int n, int bish)
 {
-   if(is_threat(b, row, col, n, bish)==false && is_piece(b, row, col, n)==false){
+   if(is_threat(b,row,col,n,bish)==0 && is_piece(b,row,col,n)==0){
       b.a[row][col] = PIECE;
    }
    return b;
 }
 
-void copy_board(board* b, board* c, int n)
+void copy_board(board* b, board* child, int n)
 {
    for(int row = 0; row < n; row++){   
       for(int col = 0; col < n; col++){
-         c->a[row][col] = b->a[row][col];
+         child->a[row][col] = b->a[row][col];
       }
    }
 }
 
-bool is_not_unique(board* b, board* l, int n)
+bool is_not_unique(board* b, board* list, int n)
 {   
    int cnt = 0;
    for(int row = 0; row < n; row++){   
       for(int col = 0; col < n; col++){ 
-         if(l->a[row][col] == b->a[row][col]){
+         if(list->a[row][col] == b->a[row][col]){
             cnt++;
             if(cnt==n*n){
-               return 1;
+               return true;
             }
          }
       }
    }
-   return 0;
+   return false;
 }
 
 int unique_count(board* b, board boards[MAX_LIST], int n, int e)
 {  
    int unique_counter = 0;
-   int check = e-1;
+   int check = e-END_STEP;
      while(check >= 0){
         if(is_not_unique(b, &boards[check], n)==1){    
-                     unique_counter++;
+           unique_counter++;
         }
            check--; 
      }
@@ -417,8 +413,7 @@ int row2rank(int col, int n)
    if(rank == 10){
       rank = 'A';
    }
-
-return rank;
+   return rank;
 }
 
 void print_file_rank(int file, int rank)
@@ -1243,6 +1238,18 @@ void test(void)
    assert(row2rank(7, 10)==3);
    assert(row2rank(8, 10)==2);
    assert(row2rank(9, 10)==1);
+   
+   //COL2FILE
+   
+   assert(col2file(0)==(int)'a');
+   assert(col2file(1)==(int)'b');
+   assert(col2file(2)==(int)'c');
+   assert(col2file(3)==(int)'d');
+   assert(col2file(4)==(int)'e');
+   assert(col2file(5)==(int)'f');
+   assert(col2file(6)==(int)'g');
+   assert(col2file(7)==(int)'h');
+   assert(col2file(8)==(int)'i');
+   assert(col2file(9)==(int)'j');
 }
-
 

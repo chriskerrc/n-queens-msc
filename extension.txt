@@ -36,3 +36,6 @@ I have added additional assert testing to these functions to test for bishops
 -is_threat_col
 -is_threat
 -add_piece [renamed from add_queen]
+
+I've also assert-tested this new function: 
+-col2file

@@ -35,5 +35,5 @@ clean:
 	rm -f 8q 8q_san 8q.zip
 
 # Create a .zip file using ALL files in this directory
-zip: 8q.c 8q.h 
+zip: 8q.c 8q.h Makefile extension.txt extension.c extension.h
 	zip -r 8q.zip 8q.c 8q.h Makefile extension.txt extension.c extension.h
