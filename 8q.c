@@ -1,4 +1,5 @@
 #include "8q.h"
+//check that this runs correctly for n = 7 verbose
 
 int main(int argc, char *argv[])
 {  
@@ -22,6 +23,7 @@ int main(int argc, char *argv[])
    int f = 0;
    int e = 1;
    static int sol_cnt = 0;
+   int rank = 0;
    board c;
 
    while(f<e){ 
@@ -39,7 +41,8 @@ int main(int argc, char *argv[])
                         for(int col = 0; col < n; col++){
                            for(int row = 0; row < n; row++){   
                               if(is_queen(c, row, col, n)==1){ 
-                                 print_row2rank(row, n);
+                                 rank = row2rank(row, n);
+                                 print_rank(rank);
                               }
                            }
                         } 
@@ -359,15 +362,23 @@ int unique_count(board* b, board boards[MAX_LIST], int n, int e)
    return unique_counter;
 }
 
-void print_row2rank(int row, int n)
-{  
+int row2rank(int row, int n)
+{
    int rank = 0;
    rank = n-row;
+   if(rank == 10){
+      rank = 'A';
+   }
+
+return rank;
+}
+
+void print_rank(int rank)
+{  
    if(rank >= 1 && rank <= 9){
       printf("%i", rank);
    }
-   if(rank == 10){
-      rank = 'A';
+   if(rank == 'A'){
       printf("%c", rank);
    }
 }
@@ -728,36 +739,76 @@ void test(void)
 
    //IS_SOLUTION
    
+   //solution n = 1
+   strcpy(str, "Q"); 
+   b = make_board(1, str); 
+   assert(is_solution(b, 1)==1); 
+  
    //solution n = 4
-   strcpy(str, "XQXXXXXQQXXXXXQX"); //these strings should actually be solutions
+   strcpy(str, "XQXXXXXQQXXXXXQX"); 
    b = make_board(4, str); 
    assert(is_solution(b, 4)==1); 
+   
+   //solution n = 5
+   strcpy(str, "XXQXXXXQXXXXXXQXXXXQXXXQX"); 
+   b = make_board(5, str); 
+   assert(is_solution(b, 5)==1); 
+
+   //solution n = 6
+   strcpy(str, "XXQXXXXXXQXXXXXXXXXXQXXXXXQQXXXXQXXX"); 
+   b = make_board(6, str); 
+   assert(is_solution(b, 6)==1); 
+
+   //solution n = 6
+   strcpy(str, "XXQXXXXXXQXXXXXXXXXXQXXXXXQQXXXXQXXX"); 
+   b = make_board(6, str); 
+   assert(is_solution(b, 6)==1); 
+
+   //solution n = 7
+   strcpy(str, "XXXXXXXXQXXXXXXXXXXXQXXXXQXXXXXXXXQXXXXXXQXXQXQXX"); 
+   b = make_board(7, str); 
+   assert(is_solution(b, 7)==1); 
 
    //solution n = 8
    strcpy(str, "QXXXXXXXXXXXXXQXXXXXQXXXXXXXXXXQXQXXXXXXXXXQXXXXXXXXQXXXXQXXXXX"); 
    b = make_board(8, str); 
    assert(is_solution(b, 8)==1); 
 
+   //solution n = 9
+   strcpy(str, "QQQQQQQQQXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(9, str); 
+   assert(is_solution(b, 9)==1); 
+
+   //solution n = 10
+   strcpy(str, "QXXXXXXXXXXXXXXXXXXXXXXQXXXXXXXXXQXXXXXQXXXXXXQXXXXXXXQXXXXQXXXXXXXQXXXXXQXXXXXXQXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(10, str); 
+   assert(is_solution(b, 10)==1); 
+
    //not solution n = 8
    strcpy(str, "QXXXXXXXXXXXXXXXXXXXQXXXXXXXXXXQXQXXXXXXXXXQXXXXXXXXQXXXXQXXXXX"); 
    b = make_board(8, str); 
    assert(is_solution(b, 8)==0); 
 
-   //solution n = 4
+   //not solution n = 4
    strcpy(str, "XQXXXXXQQXXXXXXX"); 
    b = make_board(4, str); 
    assert(is_solution(b, 4)==0); 
-
-   //add more...
    
    //ADD_QUEEN
    
-   //add queen to empty board
+   //add queen to empty board corner
    strcpy(str, "XXXXXXXXXXXXXXXX"); 
    b = make_board(4, str); 
    b = add_queen(b, 0, 0, 4);
    board2str(b, 4, str);
    assert(strcmp(str, "QXXXXXXXXXXXXXXX")==0);
+
+   //add queen to empty board middle
+   strcpy(str, "XXXXXXXXXXXXXXXX"); 
+   b = make_board(4, str); 
+   b = add_queen(b, 2, 2, 4);
+   board2str(b, 4, str);
+   assert(strcmp(str, "XXXXXXXXXXQXXXXX")==0);
 
    //add queen to board with other queens in non-threatening position
    strcpy(str, "XXXXXQXXX"); 
@@ -779,25 +830,136 @@ void test(void)
    b = add_queen(b, 1, 0, 3);
    board2str(b, 3, str);
    assert(strcmp(str, "XXXXXQXXX")==0);
+
+   //try to add queen to full board (threatening position)
+   strcpy(str, "XQXXXXXQQXXXXXQX"); 
+   b = make_board(4, str); 
+   b = add_queen(b, 0, 2, 4);
+   board2str(b, 4, str);
+   assert(strcmp(str, "XQXXXXXQQXXXXXQX")==0);
    
-   //add more e.g. add queen to edge, more threatening positions ........
+   //try to add queen to full board (on top of other queen)
+   strcpy(str, "XQXXXXXQQXXXXXQX"); 
+   b = make_board(4, str); 
+   b = add_queen(b, 0, 1, 4);
+   board2str(b, 4, str);
+   assert(strcmp(str, "XQXXXXXQQXXXXXQX")==0);
    
    //IS_NOT_UNIQUE
    board c;
 
-   //two identical boards
+   //two identical boards n = 1
+   strcpy(str, "Q"); 
+   b = make_board(1, str); 
+   strcpy(str, "Q"); 
+   c = make_board(1, str); 
+   assert(is_not_unique(&b, &c, 1)==1);
+   
+   //two identical boards n = 2
+   strcpy(str, "QX"); 
+   b = make_board(2, str); 
+   strcpy(str, "QX"); 
+   c = make_board(2, str); 
+   assert(is_not_unique(&b, &c, 2)==1);  
+
+   //two identical boards n = 3
    strcpy(str, "QXQXXQXXQ"); 
    b = make_board(3, str); 
    strcpy(str, "QXQXXQXXQ"); 
    c = make_board(3, str); 
    assert(is_not_unique(&b, &c, 3)==1); 
+
+   //two identical boards n = 3 no queens
+   strcpy(str, "XXXXXXXXX"); 
+   b = make_board(3, str); 
+   strcpy(str, "XXXXXXXXX"); 
+   c = make_board(3, str); 
+   assert(is_not_unique(&b, &c, 3)==1); 
    
-   //two different boards n = 4
+   //two identical boards n = 5
+   strcpy(str, "XXQXXXXXXXXXXXXXXXQXXXXXX"); 
+   b = make_board(5, str); 
+   strcpy(str, "XXQXXXXXXXXXXXXXXXQXXXXXX"); 
+   c = make_board(5, str); 
+   assert(is_not_unique(&b, &c, 5)==1); 
+
+   //two identical boards n = 6
+   strcpy(str, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(6, str); 
+   strcpy(str, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   c = make_board(6, str); 
+   assert(is_not_unique(&b, &c, 6)==1); 
+
+   //two identical boards n = 7
+   strcpy(str, "XXXQXXXXXXQXXXXXXQXXXXXXQXXXXXXQXXXXXXQXXXXXXQXXX"); 
+   b = make_board(7, str); 
+   strcpy(str, "XXXQXXXXXXQXXXXXXQXXXXXXQXXXXXXQXXXXXXQXXXXXXQXXX"); 
+   c = make_board(7, str); 
+   assert(is_not_unique(&b, &c, 7)==1); 
+
+   //two identical boards n = 8
+   strcpy(str, "XXXQXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXQXXXXXXXXXXXXXXXQXXXXXXXXXXXXX"); 
+   b = make_board(8, str); 
+   strcpy(str, "XXXQXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXQXXXXXXXXXXXXXXXQXXXXXXXXXXXXX"); 
+   c = make_board(8, str); 
+   assert(is_not_unique(&b, &c, 8)==1); 
+
+   //two identical boards n = 9
+   strcpy(str, "QQQQQQQQQXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(9, str); 
+   strcpy(str, "QQQQQQQQQXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   c = make_board(9, str); 
+   assert(is_not_unique(&b, &c, 9)==1); 
+   
+   //two identical boards n=10
+   strcpy(str, "QXXXXXXXXXXXXXXXXXXXXXXQXXXXXXXXXQXXXXXQXXXXXXQXXXXXXXQXXXXQXXXXXXXQXXXXXQXXXXXXQXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(10, str); 
+   strcpy(str, "QXXXXXXXXXXXXXXXXXXXXXXQXXXXXXXXXQXXXXXQXXXXXXQXXXXXXXQXXXXQXXXXXXXQXXXXXQXXXXXXQXXXXXXXXXXXXXXXXXXX"); 
+   c = make_board(10, str); 
+   assert(is_not_unique(&b, &c, 10)==1); 
+   
+   //two different boards n=1 
+   strcpy(str, "Q"); 
+   b = make_board(1, str); 
+   strcpy(str, "X"); 
+   c = make_board(1, str); 
+   assert(is_not_unique(&b, &c, 1)==0); 
+  
+   //two different boards n=2 
+   strcpy(str, "QX"); 
+   b = make_board(2, str); 
+   strcpy(str, "XX"); 
+   c = make_board(2, str); 
+   assert(is_not_unique(&b, &c, 2)==0);  
+
+   //two different boards n=3 different first char 
+   strcpy(str, "XXQXXQXXQ"); 
+   b = make_board(3, str); 
+   strcpy(str, "QXQXXQXXQ"); 
+
+   c = make_board(3, str); 
+   assert(is_not_unique(&b, &c, 3)==0); 
+
+   //two different boards n = 4 different middle char
    strcpy(str, "QXQXXXXXXXXXXXXX"); 
    b = make_board(4, str); 
    strcpy(str, "QXQXXXXXXXXXQXXX"); 
    c = make_board(4, str); 
    assert(is_not_unique(&b, &c, 4)==0); 
+   
+   //two different boards n = 6 different middle char
+   strcpy(str, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(6, str); 
+   strcpy(str, "XXXXXXXXXXXXXXXXXXQXXXXXXXXXXXXXXXXX"); 
+   c = make_board(6, str); 
+   assert(is_not_unique(&b, &c, 6)==0); 
+
+   //two different boards n = 7 different first char
+   strcpy(str, "QXXQXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(7, str); 
+   strcpy(str, "XXXXQXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   c = make_board(7, str); 
+   assert(is_not_unique(&b, &c, 7)==0); 
 
    //two different boards n = 8 different last char
    strcpy(str, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
@@ -805,9 +967,21 @@ void test(void)
    strcpy(str, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXQ"); 
    c = make_board(8, str); 
    assert(is_not_unique(&b, &c, 8)==0); 
-   
-   //more tests.....
 
+   //two different boards n = 9 different middle char
+   strcpy(str, "QQQQQQQQQXXXXXXXXXXXXXXXXQXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   b = make_board(9, str); 
+   strcpy(str, "QQQQQQQQQXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); 
+   c = make_board(9, str); 
+   assert(is_not_unique(&b, &c, 9)==0); 
+
+   //two different boards n=10 different last char
+   strcpy(str, "QXXXXXXXXXXXXXXXXXXXXXXQXXXXXXXXXQXXXXXQXXXXXXQXXXXXXXQXXXXQXXXXXXXQXXXXXQXXXXXXQXXXXXXXXXXXXXXXXXXQ"); 
+   b = make_board(10, str); 
+   strcpy(str, "QXXXXXXXXXXXXXXXXXXXXXXQXXXXXXXXXQXXXXXQXXXXXXQXXXXXXXQXXXXQXXXXXXXQXXXXXQXXXXXXQXXXXXXXXXXXXXXXXXXX"); 
+   c = make_board(10, str); 
+   assert(is_not_unique(&b, &c, 10)==0); 
+   
    //UNIQUE_COUNT
 
    //to do................
@@ -822,11 +996,23 @@ void test(void)
    
    //more tests................
 
-   //PRINT_ROW2RANK
+   //ROW2RANK
    
-   //to do................
+   //n = 1
+   assert(row2rank(0, 1)==1);
 
-   
+   //n = 10
+   assert(row2rank(0, 10)=='A');
+   assert(row2rank(0, 10)!=10);
+   assert(row2rank(1, 10)==9);
+   assert(row2rank(2, 10)==8);
+   assert(row2rank(3, 10)==7);
+   assert(row2rank(4, 10)==6);
+   assert(row2rank(5, 10)==5);
+   assert(row2rank(6, 10)==4);
+   assert(row2rank(7, 10)==3);
+   assert(row2rank(8, 10)==2);
+   assert(row2rank(9, 10)==1);
 }
 
 

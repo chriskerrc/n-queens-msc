@@ -6,7 +6,7 @@
 #define MAX_B_SIZE 10 
 #define MAX_STR_LEN 100+1
 #define MAX_SOL_LEN 10+1
-#define MAX_LIST 5000000
+#define MAX_LIST 2000000
 #define QUEEN 'Q'
 #define BLANK 'X'
 #define STEP 1
@@ -36,6 +36,7 @@ board add_queen(board b, int row, int col, int n);
 bool is_not_unique(board* b, board* l, int n);
 int unique_count(board* b, board boards[MAX_LIST], int n, int e);
 void copy_board(board* b, board* c, int n);
-void print_row2rank(int row, int n);
+int row2rank(int row, int n);
+void print_rank(int rank);
 void print_sol(int n, int sol_cnt);
 void test(void);
