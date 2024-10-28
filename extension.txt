@@ -1,0 +1,41 @@
+//N-BISHOPS & N-QUEENS
+
+I have adapted my code to find solutions for both the N-Queens problem and the related N-Bishops problem. The user can choose between these options on the command line by specifying either "-q" for N-Queens or "-b" for N-Bishops. The user can use the "-verbose" flag to print a summary of the solutions for both queens and bishops.  
+
+//Command line syntax
+For a board of size n, to find solutions for: 
+- the N-Queens problem, type "./extension n -q" or "./extension n -q -verbose"
+- the N-Bishops problem, type "./extension n -b" or "./extension n -b -verbose" 
+
+//Solution summaries
+For the extension, solution summaries are printed in file,rank format for both queens and bishops. I changed the solution summary logic because, for N-Queens, we can assume that there will be one queen per column (or file). We cannot make this assumption for bishops: indeed, there will often be multiple bishops per file. This means that my initial solution printing logic did not work for bishops and queens. 
+
+For example, for n = 4 for bishops, the first solution is a4b4c4d4. This indicates that there are four bishops in a row along rank 4 with 1 per file.
+
+//Solutions for N-Bishops
+The first few number of ways to place n nonattacking bishops on an n by n board are listed here: https://oeis.org/A002465 
+
+I have checked that the results are correct for boards up to and including n = 5. Here are the first few expected numbers of solutions: 
+
+-n=1  sol=1
+-n=2  sol=4
+-n=3  sol=26
+-n=4  sol=260
+-n=5  sol=3368
+
+For n=1 to n=4, the solutions are printed almost immediately. n=5 takes a few minutes and n=6 takes a long time (likely too long to wait for).   
+
+By default, typing "make extension" then "make run" will get solutions for the N-Bishops problem for a board of n = 4. 
+
+//Direction logic 
+The directions that queens can move on a cheesboard partially overlaps with the directions bishops can move. Both can move diagonally but queens can also move vertically and horizontally. I adapted the basic N-Queens program so that the vertical and horizontal logic can be toggled on and off. I get an integer via the function arg_qb which I then pass to existing functions that handle the vertical and horizontal threat logic. 
+
+//Testing
+I have added additional assert testing to these functions to test for bishops 
+-is_threat_row
+-is_threat_col
+-is_threat
+-add_piece [renamed from add_queen]
+
+I've also assert-tested this new function: 
+-col2file
